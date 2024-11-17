@@ -26,7 +26,7 @@ const PaymentMessageBubble = ({ order_id, setMessages }) => {
       order_id: order_id,
       handler: async function (response) {
         try {
-          print(response)
+          //print(response)
           const res = await axios.post(
             import.meta.env.VITE_BACKEND_URL + "/validate",
             {

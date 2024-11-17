@@ -42,7 +42,7 @@ async def ticketsAvailable(max:int):
             out_total += i.person_out
         
         ticket = max - (in_total-out_total)
-        print(ticket)
+        #print(ticket)
         if(ticket > 0 ):
             return ticket
         else:
