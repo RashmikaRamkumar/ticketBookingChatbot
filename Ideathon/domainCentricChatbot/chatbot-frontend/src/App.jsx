@@ -12,7 +12,8 @@ import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import logo from './assets/keclogo.png'
 import razor from './assets/razor.jpeg'
-
+import concert_people from './assets/c2.jpg'
+import artist from './assets/artist.avif'
 const PaymentMessageBubble = ({ order_id, setMessages }) => {
   const handlePayment = () => {
     var options = {
@@ -99,12 +100,42 @@ const PaymentMessageBubble = ({ order_id, setMessages }) => {
   );
 };
 
-const BotMessageBubble = ({ message }) => {
+const BotMessageBubble = ({ message, isTamil }) => {
+  const [translatedMessage, setTranslatedMessage] = useState(null);
+
+  useEffect(() => {
+    const translateMessage = async () => {
+      if (isTamil) {
+        try {
+          // Send the message to the backend to translate it to Tamil
+          const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/translate-to-tamil?input_text=${message}`);
+
+          // If translation is successful, set translated message
+          if (response.data.translated_tamil) {
+            setTranslatedMessage(response.data.translated_tamil);
+          } else {
+            setTranslatedMessage(message); // If no translation available, fallback to original message
+          }
+        } catch (error) {
+          console.error("Error translating message:", error);
+          setTranslatedMessage(message); // If there's an error, fallback to original message
+        }
+        finally{
+          setIsTamil(false);// Set listening to true when the microphone button is clicked
+        }
+      } else {
+        setTranslatedMessage(message); // If not Tamil, use the original message
+      }
+    };
+
+    translateMessage();
+  }, [message]); // Re-run the effect when message or isTamil changes
+  
   return (
     <div>
-      <div className="ml-5 font-medium text-black">Assistant</div>
+      <div className="ml-5 font-medium text-white">Assistant</div>
       <pre className="bg-[#334155] text-white m-3 font-sans rounded-t-3xl rounded-br-3xl p-3 text-wrap shadow-lg max-w-[70%] bubble">
-        <p>{message}</p>
+        <p>{translatedMessage || message}</p> {/* Display translated message if available, else the original message */}
       </pre>
     </div>
   );
@@ -113,7 +144,7 @@ const BotMessageBubble = ({ message }) => {
 const UserMessageBubble = ({ message }) => {
   return (
     <div className="max-w-[70%] ml-auto">
-      <div className="m-2">User</div>
+      <div className="m-2 text-white font-medium">User</div>
       <p className="bg-[#6b7280] text-white m-2 rounded-t-2xl rounded-bl-2xl p-3 shadow-lg bubble">{message}</p>
     </div>
   );
@@ -168,7 +199,7 @@ function App() {
   const [inputBox,setInputBox]=useState('');
   const [disableInput, setDisableInput] = useState(false);
   const messageEndRef = useRef(null);
-
+  const [isTamil,setIsTamil]=useState(false);
   useEffect(() => {
     const generatedUserId = uuidv4();
     setUserId(generatedUserId);
@@ -259,11 +290,12 @@ function App() {
 
   // Function to handle voice input
   const handleSpeech = async () => {
-    setListening(true); // Set listening to true when the microphone button is clicked
+    setListening(true);
 
     try {
       // Send a GET request to the Flask backend for voice input
-      const response = await axios.get('http://localhost:5001/voice');
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/voice`);
+      
       // If recognized text is returned, update the input state
       if (response.data.text) {
         setInputBox(response.data.text);
@@ -274,15 +306,19 @@ function App() {
     } catch (error) {
       console.error('Error while fetching voice input:', error);
     } finally {
-      setListening(false); // Set listening to false after the process is done
+      setListening(false);
+      setIsTamil(false); // Set listening to true when the microphone button is clicked
+      // Set listening to false after the process is done
     }
   };
   const handleTamilSpeech = async () => {
-    setTamilListening(true); // Set listening to true when the microphone button is clicked
+    setTamilListening(true); 
+    setIsTamil(true);// Set listening to true when the microphone button is clicked
 
     try {
       // Send a GET request to the Flask backend for voice input
-      const response = await axios.get('http://localhost:5001/tamil-voice');
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/tamil-voice`);
+
       // If recognized text is returned, update the input state
       if (response.data.recognized_tamil && response.data.translated_english) {
         setInputBox(response.data.recognized_tamil);
@@ -293,9 +329,10 @@ function App() {
     } catch (error) {
       console.error('Error while fetching voice input:', error);
     } finally {
-      setTamilListening(false); // Set listening to false after the process is done
+      setTamilListening(false);       // Set listening to false after the process is done
     }
   };
+
   return (
 <><nav class="fixed bg-white border-gray-200 dark:bg-gray-900 dark:border-gray-700 w-full">
         <div class="flex flex-wrap mx-auto p-4  justify-between items-center">
@@ -476,7 +513,7 @@ function App() {
                 } else if (item.type === "content") {
                   return (
                     <div key={index}>
-                      <BotMessageBubble message={item.message} />
+                      <BotMessageBubble message={item.message} isTamil={isTamil} />
                       <DownloadTicket pdfBase64={item.pdf} />
                     </div>
                   );
@@ -492,7 +529,7 @@ function App() {
                   return <LoadingBubble key={index} />;
                 } else {
                   return (
-                    <BotMessageBubble message={item.message} key={index} />
+                    <BotMessageBubble message={item.message} isTamil={isTamil} key={index} />
                   );
                 }
               })}
@@ -503,7 +540,7 @@ function App() {
               )}
               {tamilListening && (
                 <div className="bg-gray-200 p-2 rounded-lg text-black">
-                  Listening...
+                  நான் கேட்டுக் கொண்டிருக்கிறேன்...
                 </div>
               )}
               <div ref={messageEndRef}></div>
@@ -522,6 +559,7 @@ function App() {
                 onClick={handleSpeech}
                 className="ml-2 rounded-lg w-auto px-3 h-10 flex items-center justify-center hover:bg-[#94a3b8] bg-[#3f3f46] text-[#d4d4d8] shadow-lg transition-colors duration-300 ease-in-out"
                 >
+
                 <FontAwesomeIcon icon={faMicrophone} color="#d4d4d8" />
                   English
               </button>
