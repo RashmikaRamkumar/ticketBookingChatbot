@@ -194,7 +194,6 @@ const DownloadTicket = ({ pdfBase64 }) => {
     link.click();
     document.body.removeChild(link);
   };
-
   return (
     <button
       onClick={handleDownload}

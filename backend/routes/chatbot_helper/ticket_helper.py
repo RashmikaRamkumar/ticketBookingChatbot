@@ -7,11 +7,20 @@ from weasyprint import HTML
 from io import BytesIO
 import os
 
+<<<<<<< HEAD
 async def museumStrength(ticket_quantity, max):    
+=======
+async def museumStrength(requested_tickets: int, max_capacity: int):
+    """
+    Compares the requested ticket count with the available tickets.
+    Returns True if enough tickets are available, otherwise False.
+    """
+>>>>>>> 3c7e3325800ac31e1f134a4b272c31d6ca619fde
     try:
         prisma = Prisma()
         await prisma.connect()
         total_in_out = await prisma.ticket.find_many()
+<<<<<<< HEAD
         in_total = 0
         out_total = 0
 
@@ -24,6 +33,19 @@ async def museumStrength(ticket_quantity, max):
         else:
             return True
     except:
+=======
+
+        in_total = sum(t.person_in for t in total_in_out)
+        out_total = sum(t.person_out for t in total_in_out)
+
+        # Calculate available tickets
+        available_tickets = max_capacity - (in_total - out_total)
+
+        # Compare requested tickets with available tickets
+        return requested_tickets <= available_tickets
+    except Exception as e:
+        print(f"Error in museumStrength: {e}")
+>>>>>>> 3c7e3325800ac31e1f134a4b272c31d6ca619fde
         return False
 
 async def ticketsAvailable(max:int):
@@ -39,7 +61,11 @@ async def ticketsAvailable(max:int):
             out_total += i.person_out
         
         ticket = max - (in_total-out_total)
+<<<<<<< HEAD
         print(ticket)
+=======
+        #print(ticket)
+>>>>>>> 3c7e3325800ac31e1f134a4b272c31d6ca619fde
         if(ticket > 0 ):
             return ticket
         else:

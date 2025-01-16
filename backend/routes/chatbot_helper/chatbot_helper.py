@@ -15,7 +15,11 @@ async def customResponse(user_state, user_states, user_id, message):
 
     # Step 1: Handle Booking Confirmation
     if user_state['awaiting_confirmation']:
+<<<<<<< HEAD
         if 'yes' in message.lower() or 'ok' in message.lower():
+=======
+        if 'yes' in message.lower():
+>>>>>>> 3c7e3325800ac31e1f134a4b272c31d6ca619fde
             user_states[user_id] = {
                 'awaiting_confirmation': False,
                 'no_of_tickets': False,
@@ -148,7 +152,11 @@ async def customResponse(user_state, user_states, user_id, message):
             return {'user': 'bot', 'type': 'message', 'message': "Booking has been cancelled."}
 
         try:
+<<<<<<< HEAD
             if 'yes' in message.lower() or 'ok' in message.lower():
+=======
+            if 'yes' in message.lower():
+>>>>>>> 3c7e3325800ac31e1f134a4b272c31d6ca619fde
                 no_of_tickets = user_state['no_of_tickets_value']
                 selected_class = user_state['selected_class']
                 user_states[user_id] = {
