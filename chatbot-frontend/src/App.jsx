@@ -4,6 +4,7 @@ import { faMicrophone } from '@fortawesome/free-solid-svg-icons';
 import { faPlayCircle } from '@fortawesome/free-solid-svg-icons'; // Play icon
 import { useSpeechRecognition } from 'react-speech-recognition';
 import SpeechRecognition from 'react-speech-recognition'; // Add this import
+import { faPlay, faPause } from '@fortawesome/free-solid-svg-icons';
 import {
   faMessage,
   faFileDownload,
@@ -104,7 +105,9 @@ const PaymentMessageBubble = ({ order_id, setMessages }) => {
 
 const BotMessageBubble = ({ message, isTamil,isSpeak,setIsTamil,setIsSpeak }) => {
   const [translatedMessage, setTranslatedMessage] = useState(null);
-
+  const [audioInstance, setAudioInstance] = useState(null); // Add state to keep track of audio instance
+  const [isPlaying, setIsPlaying] = useState(false); // Add state to keep track of play/pause status
+  const [playbackPosition, setPlaybackPosition] = useState(0); 
   useEffect(() => {
     const translateMessage = async () => {
       if (isTamil) {
@@ -134,30 +137,45 @@ const BotMessageBubble = ({ message, isTamil,isSpeak,setIsTamil,setIsSpeak }) =>
     translateMessage();
   }, [message]); // Re-run the effect when message or isTamil changes
  
-  const handlePlay = async () => {
-    const msg = translatedMessage || message;
-    const lang = isSpeak ? 'ta' : 'en';
+  const handlePlayPause = async () => {
+    if (isPlaying && audioInstance) {
+      setPlaybackPosition(audioInstance.currentTime); // Track the current playback position
+      audioInstance.pause();
+      setIsPlaying(false);
+    } else {
+      const msg = translatedMessage || message;
+      const lang = isSpeak ? 'ta' : 'en';
 
-    try {
-      const formData = new FormData();
-      formData.append('text', msg);
-      formData.append('lang', lang);
+      try {
+        const formData = new FormData();
+        formData.append('text', msg);
+        formData.append('lang', lang);
 
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/speak`, formData);
-      const audioBase64 = response.data.audio;
+        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/speak`, formData);
+        const audioBase64 = response.data.audio;
 
-      // Create a Blob from the base64-encoded audio string
-      const audioBlob = new Blob([Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0))], { type: 'audio/mp3' });
+        // Create a Blob from the base64-encoded audio string
+        const audioBlob = new Blob([Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0))], { type: 'audio/mp3' });
 
-      // Create a URL for the Blob and play the audio
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
-      audio.play();
-    } catch (error) {
-      console.error('Error playing audio:', error);
+        // Create a URL for the Blob and play the audio
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+        audio.currentTime = playbackPosition; // Resume playback from the previous position
+        audio.play();
+
+        // Update state with the current audio instance
+        setAudioInstance(audio);
+        setIsPlaying(true);
+
+        audio.onended = () => {
+          setIsPlaying(false); // Reset play status when audio ends
+        };
+      } catch (error) {
+        console.error('Error playing audio:', error);
+      }
+
+      setIsSpeak(false); // Reset speak mode
     }
-
-    setIsSpeak(false); // Reset speak mode
   };
 
   return (
@@ -166,9 +184,10 @@ const BotMessageBubble = ({ message, isTamil,isSpeak,setIsTamil,setIsSpeak }) =>
       <pre className="bg-[#334155] text-white m-3 font-sans rounded-t-3xl rounded-br-3xl p-3 text-wrap shadow-lg max-w-[70%] bubble">
         <p>{translatedMessage || message}</p> {/* Display translated message if available, else the original message */}
       </pre>
-      <button onClick={handlePlay} className="play-btn">
-        <FontAwesomeIcon icon={faPlayCircle} size="2x" color="white" />
+      <button onClick={handlePlayPause} className="play-btn">
+      <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} size="xl" color="#333" />
       </button>
+      
     </div>
   );
 };
@@ -355,6 +374,9 @@ function App() {
         SpeechRecognition.stopListening(); // Reset speak mode
       }, 5000); // Adjust the duration (5000 ms = 5 seconds) as needed
       setTimeoutId(newTimeoutId);
+      setListening(false);
+      setTamilListening(false);
+
     };
     
     useEffect(() => {
