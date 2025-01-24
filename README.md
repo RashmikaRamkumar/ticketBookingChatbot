@@ -120,6 +120,9 @@
 ### Deploy FastAPI Backend
 
 - **Upload your FastAPI files to the EC2 instance.**
+     ```bash
+     git clone <repository-url>
+     ```
 
 - **Install dependencies from requirements.txt:**
   ```sh
