@@ -1,6 +1,6 @@
 # AWS EC2 Deployment Guide for React and FastAPI with PostgreSQL
 
-## Steps in AWS Management Console
+## Steps in AWS Management Console  
 
 1. **Launch an EC2 Instance:**
    - Go to the [AWS Management Console](https://aws.amazon.com/console/) and log in.
