@@ -172,7 +172,7 @@
   ```nginx
   server {
       listen 80;
-      server_name your-domain.com;
+      server_name _;
 
       location / {
           root /var/www/html;
