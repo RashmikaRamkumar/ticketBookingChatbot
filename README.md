@@ -30,7 +30,11 @@
    - With your instance selected, click the **Connect** button at the top of the page.
    - In the "Connect to instance" page, choose the **EC2 Instance Connect** option.
    - Click **Connect**. This will open an in-browser terminal.
-
+3. **Connect to EC2 Instance:**
+   - Use the following command to connect to your instance via SSH:
+     ```sh
+     ssh -i "your-key-pair.pem" ubuntu@your-elastic-ip
+     ```
 ### Using Git Bash on Windows
 
 1. **Open Git Bash:**
@@ -38,8 +42,13 @@
      ```sh
      chmod 400 your-key-pair.pem
      ```
-
 2. **Connect to EC2 Instance:**
+   - Use the following command to connect to your instance via SSH:
+     ```sh
+     ssh -i "your-key-pair.pem" ubuntu@your-elastic-ip
+     ```
+### Git Bash 
+1. **Connect to EC2 Instance:**
    - Use the following command to connect to your instance via SSH:
      ```sh
      ssh -i "your-key-pair.pem" ubuntu@your-elastic-ip
@@ -133,9 +142,12 @@
 
 - **Login to the Ubuntu Server:**
   ```bash
-  ssh ubuntu@<server-ip>
+  ssh -i "your-key-pair.pem" ubuntu@<server-ip>
   ```
-
+- **If already logged in use:**
+  ```bash
+     ssh ubuntu@<server-ip>
+   ```
 - **Move the File to the Web Directory:**
   ```bash
   sudo mv /home/ubuntu/index.zip /var/www/html/
